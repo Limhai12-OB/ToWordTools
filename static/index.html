@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ToWord — PDF to Word (Khmer)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="/" id="brand">
+      <span class="logo" aria-hidden="true">W</span>
+      <span>
+        <strong>ToWord</strong>
+        <small data-i18n="tagline">PDF → editable Word · Khmer supported</small>
+      </span>
+    </a>
+    <div class="top-actions">
+      <button class="lang-toggle" id="langToggle" type="button" aria-label="Switch language">ខ្មែរ</button>
+    </div>
+  </header>
+
+  <!-- 1. Upload -->
+  <main id="viewUpload" class="view">
+    <section class="hero">
+      <h1 data-i18n="heroTitle">Convert PDF to Word and edit it right here</h1>
+      <p data-i18n="heroSub">Works with Khmer and English documents, including scanned PDFs (OCR).</p>
+    </section>
+
+    <label class="dropzone" id="dropzone" tabindex="0">
+      <input type="file" id="fileInput" hidden>
+      <div class="dz-icon" aria-hidden="true">
+        <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M12 18v-6"/><path d="m9 15 3-3 3 3"/></svg>
+      </div>
+      <div class="dz-title" data-i18n="dropTitle">Drop your file here, or click to choose</div>
+      <div class="dz-sub" data-i18n="dropSub">PDF, images (JPG/PNG), DOCX, DOC, ODT, RTF · up to 60 MB</div>
+    </label>
+
+    <details class="options" id="options">
+      <summary data-i18n="options">Conversion options</summary>
+      <div class="opt-grid">
+        <fieldset>
+          <legend data-i18n="modeLabel">Mode</legend>
+          <label class="radio"><input type="radio" name="mode" value="auto" checked>
+            <span><b data-i18n="modeAuto">Automatic</b><small data-i18n="modeAutoHint">Picks layout or OCR for you</small></span></label>
+          <label class="radio"><input type="radio" name="mode" value="layout">
+            <span><b data-i18n="modeLayout">Keep layout</b><small data-i18n="modeLayoutHint">Best for digital PDFs: keeps tables, images, positions</small></span></label>
+          <label class="radio"><input type="radio" name="mode" value="hybrid">
+            <span><b data-i18n="modeHybrid">Keep layout + fix Khmer with OCR</b><small data-i18n="modeHybridHint">For Khmer PDFs made in Word: keeps the form layout, re-reads Khmer text from the page</small></span></label>
+          <label class="radio"><input type="radio" name="mode" value="ocr">
+            <span><b data-i18n="modeOcr">OCR (read text from image)</b><small data-i18n="modeOcrHint">For scanned PDFs or when Khmer text comes out garbled</small></span></label>
+        </fieldset>
+        <div class="opt-col">
+          <label class="field"><span data-i18n="langLabel">OCR language</span>
+            <select id="ocrLang">
+              <option value="khm+eng" data-i18n="langBoth">Khmer + English</option>
+              <option value="khm" data-i18n="langKhm">Khmer only</option>
+              <option value="eng" data-i18n="langEng">English only</option>
+            </select>
+          </label>
+          <label class="field"><span data-i18n="fontLabel">Khmer font in Word</span>
+            <select id="fontSelect"></select>
+          </label>
+        </div>
+      </div>
+    </details>
+
+    <div class="resume" id="resumeBox" hidden>
+      <span data-i18n="resumeText">Continue editing your last document?</span>
+      <strong id="resumeName"></strong>
+      <button class="btn small" id="resumeBtn" type="button" data-i18n="resumeBtn">Open</button>
+    </div>
+
+    <ul class="features">
+      <li><b data-i18n="f1t">Khmer-ready</b><span data-i18n="f1">Repairs broken Khmer text from PDFs and sets proper Khmer fonts for Word.</span></li>
+      <li><b data-i18n="f2t">Scanned PDFs</b><span data-i18n="f2">Built-in Khmer + English OCR turns page images into editable text.</span></li>
+      <li><b data-i18n="f3t">Edit, then download</b><span data-i18n="f3">Edit in the browser and download as Word (.docx) or PDF.</span></li>
+    </ul>
+  </main>
+
+  <!-- 2. Progress -->
+  <main id="viewProgress" class="view" hidden>
+    <div class="progress-card">
+      <div class="spinner" aria-hidden="true"></div>
+      <h2 id="progName">document.pdf</h2>
+      <div class="bar"><div class="bar-fill" id="progBar"></div></div>
+      <p id="progMsg" class="muted">…</p>
+      <div id="progError" class="error" hidden></div>
+      <button class="btn ghost" id="progBack" type="button" hidden data-i18n="tryAnother">Try another file</button>
+    </div>
+  </main>
+
+  <!-- 3. Editor -->
+  <main id="viewEditor" class="view editor-view" hidden>
+    <div class="editor-bar">
+      <div class="doc-meta">
+        <span class="doc-name" id="docName"></span>
+        <span class="badge" id="modeBadge"></span>
+        <span class="save-state" id="saveState"></span>
+      </div>
+      <div class="editor-actions">
+        <button class="btn ghost" id="btnCompare" type="button" data-i18n="compare">Show original</button>
+        <div class="menu">
+          <button class="btn ghost" id="btnReconvert" type="button" aria-haspopup="true"><span data-i18n="reconvert">Convert again</span> ▾</button>
+          <div class="menu-list" id="reconvertMenu" hidden>
+            <button type="button" data-mode="hybrid"><b data-i18n="modeHybrid">Keep layout + fix Khmer with OCR</b><small data-i18n="modeHybridShort">Best for Khmer PDFs from Word</small></button>
+            <button type="button" data-mode="layout"><b data-i18n="modeLayout">Keep layout</b><small data-i18n="modeLayoutShort">Use the PDF's own text</small></button>
+            <button type="button" data-mode="ocr"><b data-i18n="modeOcr">OCR (read text from image)</b><small data-i18n="modeOcrShort">Plain text, for scanned pages</small></button>
+          </div>
+        </div>
+        <div class="menu">
+          <button class="btn primary" id="btnDownload" type="button" aria-haspopup="true">
+            <span data-i18n="download">Download</span> ▾</button>
+          <div class="menu-list" id="downloadMenu" hidden>
+            <button type="button" data-dl="docx"><b data-i18n="dlDocx">Word (.docx) — with my edits</b></button>
+            <button type="button" data-dl="pdf"><b data-i18n="dlPdf">PDF — with my edits</b></button>
+            <button type="button" data-dl="original"><b data-i18n="dlOrig">Word (.docx) — original conversion</b><small data-i18n="dlOrigHint">Exact layout, without browser edits</small></button>
+          </div>
+        </div>
+        <button class="btn ghost" id="btnNew" type="button" data-i18n="newFile">New file</button>
+      </div>
+    </div>
+    <div class="notice" id="notice" hidden></div>
+    <div class="split" id="split">
+      <section class="pane-original" id="paneOriginal" hidden>
+        <iframe id="originalFrame" title="Original document"></iframe>
+      </section>
+      <section class="pane-editor">
+        <textarea id="editor"></textarea>
+      </section>
+    </div>
+  </main>
+
+  <div class="toast" id="toast" role="status" hidden></div>
+
+  <script src="/vendor/tinymce/tinymce.min.js"></script>
+  <script src="/app.js"></script>
+</body>
+</html>
